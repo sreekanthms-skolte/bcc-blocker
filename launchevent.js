@@ -5,4 +5,17 @@ function onMessageSendHandler(event) {
     });
 }
 
-Office.actions.associate("onMessageSendHandler", onMessageSendHandler);
+function registerHandler() {
+    if (Office.actions && Office.actions.associate) {
+        Office.actions.associate(
+            "onMessageSendHandler",
+            onMessageSendHandler
+        );
+    }
+}
+
+if (Office.onReady) {
+    Office.onReady(registerHandler);
+} else {
+    registerHandler();
+}
