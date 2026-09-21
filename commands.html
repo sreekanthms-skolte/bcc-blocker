@@ -1,13 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>BCC Compliance</title>
+    <meta charset="UTF-8">
+    <title>BCC Compliance</title>
 
-  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <script src="launchevent.js"></script>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+
+    <script>
+        function onMessageSendHandler(event) {
+
+            Office.context.mailbox.item.bcc.getAsync(
+                { asyncContext: event },
+                function (asyncResult) {
+
+                    var eventContext = asyncResult.asyncContext;
+
+                    if (asyncResult.status !== Office.AsyncResultStatus.Succeeded) {
+
+                        eventContext.completed({
+                            allowEvent: false,
+                            errorMessage: "Unable to verify Bcc recipients. Please try again."
+                        });
+
+                        return;
+                    }
+
+                    var bccRecipients = asyncResult.value || [];
+
+                    if (bccRecipients.length > 0) {
+
+                        eventContext.completed({
+                            allowEvent: false,
+                            errorMessage: "Manual Bcc is not permitted. Remove the Bcc recipient and send again."
+                        });
+
+                        return;
+                    }
+
+                    // No manual Bcc
+                    eventContext.completed({
+                        allowEvent: true
+                    });
+                }
+            );
+        }
+
+        Office.actions.associate(
+            "onMessageSendHandler",
+            onMessageSendHandler
+        );
+    </script>
 </head>
+
 <body>
-  <p>BCC Compliance add-in.</p>
+    <p>BCC Compliance add-in.</p>
 </body>
 </html>
